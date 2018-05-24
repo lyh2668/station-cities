@@ -1,15 +1,14 @@
 {
-  "name": "cityairport",
+  "name": "transstations",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "lyh2668@163.com",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "qs": "^6.5.1"
+    "axios": "^0.18.0"
   }
 }

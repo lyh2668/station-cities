@@ -10,9 +10,9 @@ const instance = axios.create({
 const handleInternal = (item, char) => {
   const obj = {
     cname: item.CityName,
-    ename: item.FullPY,
-    short: item.ShortPY,
-    code: item.airPortCode,
+    ename: item.FullPY.toUpperCase(),
+    short: item.ShortPY.toUpperCase(),
+    code: item.airPortCode.toUpperCase(),
     countryCode: 'CN',
     countryName: '中国',
     firstLetter: char,
@@ -22,8 +22,8 @@ const handleInternal = (item, char) => {
 const handleForeign = (item, char) => {
   const obj = {
     cname: item.CNName,
-    ename: item.ENName,
-    code: item.Code,
+    ename: item.ENName.toUpperCase(),
+    code: item.Code.toUpperCase(),
     countryCode: item.CountryCode,
     countryName: item.CountryName,
     firstLetter: char
@@ -32,7 +32,13 @@ const handleForeign = (item, char) => {
 }
 
 const forEachChar = async (fn, options = {}) => {
-  const obj = {}
+  let output
+  if (options.format === 'array') {
+    output = []
+  } else {
+    output = {}
+  }
+
   for (let i = 0; i < 26; ++i) {
     const char = String.fromCharCode(65 + i)
     const params = {
@@ -42,15 +48,21 @@ const forEachChar = async (fn, options = {}) => {
     }
     const res = await instance.get('/', { params })
     const data = res.data.Data
-    obj[char] = []
+    if (options.format !== 'array') {
+      output[char] = []
+    }
     for (item of data) {
       if (fn instanceof Function ||
         Object.prototype.toString.call(fn) === '[object Function]') {
-        obj[char].push(fn(item, char))
+        if (options.format === 'array') {
+          output.push(fn(item, char))
+        } else {
+          output[char].push(fn(item, char))
+        }
       }
     }
   }
-  return obj
+  return output
 }
 
 // 国内数据
@@ -65,6 +77,24 @@ forEachChar(handleInternal, { category: 0 }).then(res => {
 // 国外数据
 forEachChar(handleForeign, { category: 1 }).then(res => {
   fs.writeFile('foreign.json', JSON.stringify(res), err => {
+    if (err) {
+      console.log(err)
+    }
+  })
+})
+
+// 国内机场数据格式化数组形式
+forEachChar(handleInternal, { category: 0, format: 'array' }).then(res => {
+  fs.writeFile('internal-array.json', JSON.stringify(res), err => {
+    if (err) {
+      console.log(err)
+    }
+  })
+})
+
+// 国外机场数据格式化数组形式
+forEachChar(handleForeign, { category: 1, format: 'array' }).then(res => {
+  fs.writeFile('foreign-array.json', JSON.stringify(res), err => {
     if (err) {
       console.log(err)
     }
